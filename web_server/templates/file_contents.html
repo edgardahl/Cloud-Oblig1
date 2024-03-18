@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Contents</title>
+</head>
+<body>
+    <h2>Uploaded File Contents</h2>
+    <ul>
+        {% for filename, content in file_contents.items() %}
+            <li>
+                <h3>{{ filename }}</h3>
+                {% if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.jpeg') %}
+                    <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="{{ filename }}">
+                {% else %}
+                    <pre>{{ content }}</pre>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
