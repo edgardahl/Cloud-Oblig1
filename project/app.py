@@ -110,4 +110,4 @@ def compress_to_tar_gz(html_files, tar_gz_file_path):
             tar.add(html_file, arcname=os.path.basename(html_file))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5010)
+    app.run(debug=True, port=5050)
