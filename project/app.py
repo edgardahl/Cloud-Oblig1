@@ -1,15 +1,20 @@
 import os
 import shutil  
+import logging
 from flask import Flask, render_template, request, send_file
 import tarfile
 import csv
+from weasyprint import HTML
+
+# Set up logging for WeasyPrint
+logger = logging.getLogger('weasyprint')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
-TEMP_DIR = os.path.join(app.root_path, 'temp')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['TEMP_DIR'] = TEMP_DIR
 
 # Route to render the upload form
 @app.route('/')
@@ -24,22 +29,23 @@ def upload_files():
     if len(uploaded_files) == 0:
         return 'No files selected'
 
-    os.makedirs(app.config['TEMP_DIR'], exist_ok=True)
+    # Create a temporary directory
+    temp_dir = os.path.join(app.root_path, 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
 
     for file in uploaded_files:
         if file.filename == '':
             return 'No selected file'
 
-        temp_file_path = os.path.join(app.config['TEMP_DIR'], file.filename)
+        temp_file_path = os.path.join(temp_dir, file.filename)
         file.save(temp_file_path)
 
-    tar_file_path = temp_file_path
-    extract_dir = app.config['TEMP_DIR']
-    extract_tar_contents(tar_file_path, extract_dir)
+    # Extract tar contents
+    extract_tar_contents(temp_file_path, temp_dir)
 
     # Dynamically load Markdown and CSV files
-    markdown_file_path = find_file_with_extension(extract_dir, '.md')
-    csv_file_path = find_file_with_extension(extract_dir, '.csv')
+    markdown_file_path = find_file_with_extension(temp_dir, '.md')
+    csv_file_path = find_file_with_extension(temp_dir, '.csv')
 
     if not (markdown_file_path and csv_file_path):
         return 'Markdown or CSV file not found'
@@ -49,16 +55,17 @@ def upload_files():
 
     modified_markdown = perform_replacements(csv_data, markdown_content)
 
-    md_files = []
+    pdf_files = []
     for person, content in modified_markdown.items():
-        md_file_path = os.path.join(app.config['TEMP_DIR'], f"{person}.md")
-        write_to_md(content, md_file_path)
-        md_files.append(md_file_path)
+        pdf_file_path = os.path.join(temp_dir, f"{person}.pdf")
+        convert_md_to_pdf(content, pdf_file_path)
+        pdf_files.append(pdf_file_path)
 
     tar_gz_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'output.tar.gz')
-    compress_to_tar_gz(md_files, tar_gz_file_path)
+    compress_to_tar_gz(pdf_files, tar_gz_file_path)
 
-    shutil.rmtree(app.config['TEMP_DIR'])
+    # Delete the temporary directory
+    #shutil.rmtree(temp_dir)
 
     return send_file(tar_gz_file_path, as_attachment=True)
 
@@ -94,18 +101,23 @@ def perform_replacements(csv_data, markdown_content):
         modified_content = markdown_content.replace('{{FirstName}}', person['FirstName'])
         modified_content = modified_content.replace('{{LastName}}', person['LastName'])
         modified_markdown[f"{person['FirstName']}_{person['LastName']}"] = modified_content
+        
+        # Print the modified Markdown content
+        print("Modified Markdown Content:")
+        print(modified_content)
+        
     return modified_markdown
 
-# Function to write Markdown content to file
-def write_to_md(markdown_content, md_file_path):
-    with open(md_file_path, 'w') as md_file:
-        md_file.write(markdown_content)
+# Function to convert Markdown content to PDF using WeasyPrint
+def convert_md_to_pdf(markdown_content, pdf_file_path):
+    html_content = f"<html><body>{markdown_content}</body></html>"
+    HTML(string=html_content).write_pdf(pdf_file_path)
 
-# Function to compress Markdown files into a tar.gz file
-def compress_to_tar_gz(md_files, tar_gz_file_path):
+# Function to compress PDF files into a tar.gz file
+def compress_to_tar_gz(pdf_files, tar_gz_file_path):
     with tarfile.open(tar_gz_file_path, 'w:gz') as tar:
-        for md_file in md_files:
-            tar.add(md_file, arcname=os.path.basename(md_file))
+        for pdf_file in pdf_files:
+            tar.add(pdf_file, arcname=os.path.basename(pdf_file))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5055)
