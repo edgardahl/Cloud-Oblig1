@@ -3,7 +3,6 @@ import shutil
 from flask import Flask, render_template, request, send_file
 import tarfile
 import csv
-from markdown2 import markdown
 
 app = Flask(__name__)
 
@@ -50,14 +49,14 @@ def upload_files():
 
     modified_markdown = perform_replacements(csv_data, markdown_content)
 
-    html_files = []
+    md_files = []
     for person, content in modified_markdown.items():
-        html_file_path = os.path.join(app.config['TEMP_DIR'], f"{person}.html")
-        convert_md_to_html(content, html_file_path)
-        html_files.append(html_file_path)
+        md_file_path = os.path.join(app.config['TEMP_DIR'], f"{person}.md")
+        write_to_md(content, md_file_path)
+        md_files.append(md_file_path)
 
     tar_gz_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'output.tar.gz')
-    compress_to_tar_gz(html_files, tar_gz_file_path)
+    compress_to_tar_gz(md_files, tar_gz_file_path)
 
     shutil.rmtree(app.config['TEMP_DIR'])
 
@@ -97,17 +96,16 @@ def perform_replacements(csv_data, markdown_content):
         modified_markdown[f"{person['FirstName']}_{person['LastName']}"] = modified_content
     return modified_markdown
 
-# Function to convert Markdown content to HTML
-def convert_md_to_html(markdown_content, html_file_path):
-    html_content = markdown(markdown_content)
-    with open(html_file_path, 'w') as html_file:
-        html_file.write(html_content)
+# Function to write Markdown content to file
+def write_to_md(markdown_content, md_file_path):
+    with open(md_file_path, 'w') as md_file:
+        md_file.write(markdown_content)
 
-# Function to compress HTML files into a tar.gz file
-def compress_to_tar_gz(html_files, tar_gz_file_path):
+# Function to compress Markdown files into a tar.gz file
+def compress_to_tar_gz(md_files, tar_gz_file_path):
     with tarfile.open(tar_gz_file_path, 'w:gz') as tar:
-        for html_file in html_files:
-            tar.add(html_file, arcname=os.path.basename(html_file))
+        for md_file in md_files:
+            tar.add(md_file, arcname=os.path.basename(md_file))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5050)
+    app.run(debug=True, port=5055)
