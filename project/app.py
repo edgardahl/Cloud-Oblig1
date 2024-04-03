@@ -5,14 +5,19 @@ from flask import Flask, render_template, request, send_file
 import tarfile
 import csv
 import pdfkit
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Load environment variables from .env file
+load_dotenv()
+
 # Specify the path to the wkhtmltopdf executable
-config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+wkhtmltopdf_path = os.getenv('WKHTMLTOPDF_PATH')
+config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
 
 # Route to render the upload form
 @app.route('/')

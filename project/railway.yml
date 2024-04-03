@@ -1,0 +1,2 @@
+commands:
+  start: python app.py
