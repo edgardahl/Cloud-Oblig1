@@ -4,17 +4,15 @@ import logging
 from flask import Flask, render_template, request, send_file
 import tarfile
 import csv
-from weasyprint import HTML
-
-# Set up logging for WeasyPrint
-logger = logging.getLogger('weasyprint')
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
+import pdfkit
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Specify the path to the wkhtmltopdf executable
+config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
 
 # Route to render the upload form
 @app.route('/')
@@ -65,7 +63,7 @@ def upload_files():
     compress_to_tar_gz(pdf_files, tar_gz_file_path)
 
     # Delete the temporary directory
-    #shutil.rmtree(temp_dir)
+    shutil.rmtree(temp_dir)
 
     return send_file(tar_gz_file_path, as_attachment=True)
 
@@ -81,10 +79,11 @@ def find_file_with_extension(directory, extension):
             return os.path.join(directory, file)
     return None
 
-# Function to load CSV file
+# Function to load CSV file and print column titles
 def load_csv(csv_file_path):
     with open(csv_file_path, 'r', newline='') as csv_file:
         csv_reader = csv.DictReader(csv_file)
+        # Read the data rows
         csv_data = [row for row in csv_reader]
     return csv_data
 
@@ -98,20 +97,16 @@ def read_markdown(markdown_file_path):
 def perform_replacements(csv_data, markdown_content):
     modified_markdown = {}
     for person in csv_data:
-        modified_content = markdown_content.replace('{{FirstName}}', person['FirstName'])
-        modified_content = modified_content.replace('{{LastName}}', person['LastName'])
-        modified_markdown[f"{person['FirstName']}_{person['LastName']}"] = modified_content
-        
-        # Print the modified Markdown content
-        print("Modified Markdown Content:")
-        print(modified_content)
-        
+        modified_content = markdown_content
+        for title, value in person.items():
+            modified_content = modified_content.replace(f'{{{{{title}}}}}', value)
+        person_name = '_'.join([person[title] for title in person.keys()])
+        modified_markdown[person_name] = modified_content
     return modified_markdown
 
-# Function to convert Markdown content to PDF using WeasyPrint
+# Function to convert Markdown content to PDF using pdfkit
 def convert_md_to_pdf(markdown_content, pdf_file_path):
-    html_content = f"<html><body>{markdown_content}</body></html>"
-    HTML(string=html_content).write_pdf(pdf_file_path)
+    pdfkit.from_string(markdown_content, pdf_file_path, configuration=config)
 
 # Function to compress PDF files into a tar.gz file
 def compress_to_tar_gz(pdf_files, tar_gz_file_path):
