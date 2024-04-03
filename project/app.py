@@ -120,4 +120,4 @@ def compress_to_tar_gz(pdf_files, tar_gz_file_path):
             tar.add(pdf_file, arcname=os.path.basename(pdf_file))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5055)
+    app.run(debug=True, port=5056)
