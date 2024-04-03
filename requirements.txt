@@ -29,9 +29,8 @@ Markdown==3.6
 markdown2==2.4.13
 Markdown2PDF==0.1.4
 MarkupSafe==2.1.5
-numpy==1.26.4
+numpy==1.24.4
 packaging==24.0
-pandas==2.2.1
 pandoc==2.3
 pdfkit==1.0.0
 pillow==10.2.0
@@ -62,6 +61,6 @@ uvicorn==0.27.0.post1
 weasyprint==61.1
 webcolors==1.13
 webencodings==0.5.1
-Werkzeug==3.0.1
 wsproto==1.2.0
 zopfli==0.2.3
+reportlab==4.1.0
