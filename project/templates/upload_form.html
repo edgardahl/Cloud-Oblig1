@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload Form</title>
+    <title>tar.gz File uploader 3000</title>
+    <link rel="stylesheet" href="../static/style.css" />
 </head>
 <body>
-    <h1>Upload Files</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="files[]" multiple accept=".png, .jpg, .jpeg, .pdf, .csv, .md">
-        <button type="submit">Upload</button>
-    </form>
+    <div class="container">
+        <h1>Upload Files</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="files[]" />
+            <p class="file-label">Drag and drop files here or click to choose</p>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
 </body>
 </html>
