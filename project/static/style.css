@@ -2,6 +2,7 @@ body {
     background: rgb(221,232,253);
 background: linear-gradient(0deg, rgba(221,232,253,1) 0%, rgba(176,202,250,1) 100%);
     margin: 0;
+    font-family: sans-serif;
 }
 
 body, html {
