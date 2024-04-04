@@ -103,20 +103,14 @@ def perform_replacements(csv_data, markdown_content):
 # Function to convert Markdown content to PDF using FPDF
 def convert_md_to_pdf(markdown_content, pdf_file_path):
     class PDF(FPDF):
-        def header(self):
-            self.set_font('Arial', 'B', 12)
-            self.cell(0, 10, 'Your Header', 0, 1, 'C')
- 
-        def footer(self):
-            self.set_y(-15)
-            self.set_font('Arial', 'I', 8)
-            self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
- 
+        pass
+
     pdf = PDF()
     pdf.add_page()
     pdf.set_font('Times', '', 12)
     pdf.multi_cell(0, 10, markdown_content)
     pdf.output(pdf_file_path)
+
  
 # Function to compress PDF files into a tar.gz file
 def compress_to_tar_gz(pdf_files, tar_gz_file_path):
