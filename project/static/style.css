@@ -47,7 +47,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background-color: #45a049; /* Darker green background color on hover */
+    background-color: rgb(82, 180, 130); /* Darker green background color on hover */
 }
 
 form{
